@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'optparse'
+require File.join(File.dirname(__FILE__), "..", "lib", "passify")
+
+options = {:apache_config_file => "/etc/apache2/users/#{ENV['USER']}.conf",
+           :hosts_file => "/etc/hosts"}
+
+OptionParser.new do |opts|
+
+  opts.banner = "passify: Passenger control panel for the command line"
+
+  opts.on('--help', "Print this message") do
+    puts "#{opts}\n"
+    exit
+  end
+
+  opts.on('--apache-config-file=FILE', "Apache config file (Default: #{options[:apache_config_file]})") do |file|
+    options[:apache_config_file] = file
+  end
+
+  opts.on('--watch-path=PATH', "Path to watch (Default: #{options[:watch_path]})") do |path|
+    options[:watch_path] = path
+  end
+
+  opts.on('--remove', "Remove captured from launchd") do
+    puts "Uninstalling captured" 
+    File.delete "#{ENV['HOME']}/Library/LaunchAgents/com.github.csexton.captured"
+    system "launchctl remove com.github.csexton.captured"
+    exit
+  end
+end.parse!
+
+Passify.new(options).run
